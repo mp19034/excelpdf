@@ -1,46 +1,81 @@
 import openpyxl
 from fpdf import FPDF
 
-# Define variable to load the dataframe
+# Cargar el archivo Excel
 excel_dataframe = openpyxl.load_workbook("autoventa.xlsx")
 
-# Define variable to read sheet
+# Seleccionar la hoja activa del archivo Excel
 dataframe = excel_dataframe.active
 
 data = []
 
-# Iterate the loop to read the cell values
+# Iterar para leer los valores de las celdas
 for row in range(1, dataframe.max_row):
     _row = [row,]
 
+    # Iterar sobre las columnas y agregar los valores al row
     for col in dataframe.iter_cols(1, dataframe.max_column):
         _row.append(col[row].value)
 
     data.append(_row)
 
-headers = ["#","Codigo", "Descripcion", "Unidades", "Total"]
+# Encabezados de las columnas en el PDF
+headers = ["#", "Codigo", "Descripcion", "Unidades", "Total"]
 
-# Create a new PDF in landscape orientation
+# Texto que deseas agregar encima de la tabla
+texto_superior = "Productos Alimenticios Diana, S.A de C.V. \n Distribuidora Santa Ana \n Picking List"
+
+# Texto inferior con tabuladores para alinear Ruta: a la izquierda y Picking: a la derecha
+ruta_texto = "Ruta:"
+picking_texto = "Picking:"
+line = "_________________________________________________________________________________________________________________________________________________________________________________________________________________________________________"
+vendedor = "Vendedor:"
+carga = "Carga de Mercancia:"
+pickig_list = "Picking List:"
+
+# Crear un nuevo PDF en orientación horizontal (landscape)
 pdf = FPDF(orientation='L', unit='mm', format='A4')
 pdf.add_page()
-pdf.set_font("Arial", size=8)
+pdf.set_font("Arial", size=6)
 
-# Calculate the width of each cell to fit the page width
-page_width = pdf.w - 2 * pdf.l_margin  # Page width minus margins
-col_width = page_width / len(headers)  # Equal width for each column
+# Calcular el ancho de cada celda para que ajuste al ancho de la página
+page_width = pdf.w - 2 * pdf.l_margin  # Ancho de la página menos los márgenes
 
-# Add the header row
+# Agregar texto encima de los encabezados y la tabla
+pdf.set_xy(20, 5)  # Posición XY para el texto superior
+pdf.multi_cell(page_width - 20, 8, texto_superior, 0, 'C')
+pdf.multi_cell(page_width , 2, line, 0, 'C')
+
+# Calcular la altura del texto superior
+texto_superior_height = pdf.get_y()
+
+# Agregar texto inferior con tabuladores para alinear Ruta: a la izquierda y Picking: a la derecha
+pdf.set_xy(10, texto_superior_height + 5)  # Posición XY para el texto inferior
+pdf.cell(page_width // 2 - 20, 10, ruta_texto, 0, 0, 'L')
+pdf.cell(page_width // 2 - 10, 10, picking_texto, 0, 0, 'R')
+
+#Vendedor y carga
+pdf.set_xy(10, texto_superior_height + 15)  # Posición XY para el texto inferior
+pdf.cell(page_width // 2 - 20, 10, vendedor, 0, 0, 'L')
+pdf.cell(page_width // 2 - 10, 10, carga, 0, 0, 'R')
+
+#pickin list
+pdf.set_xy(10, texto_superior_height + 25)  # Posición XY para el texto inferior
+pdf.cell(page_width // 2 - 20, 10, pickig_list, 0, 0, 'L')
+
+# Agregar la fila de encabezados
+pdf.set_xy(pdf.l_margin, pdf.get_y() + 10)  # Posicionar debajo del texto superior
 for header in headers:
-    pdf.cell(col_width, 10, header, 1, 0, 'C')
+    pdf.cell(page_width / len(headers), 6, header, 1, 0, 'C')
 pdf.ln()
 
-# Add the data rows
+# Agregar las filas de datos
 for row_data in data:
     for cell_value in row_data:
         text = str(cell_value) if cell_value is not None else ''
-        # Ensure the text is encoded as UTF-8
-        pdf.cell(col_width, 10, text.encode('latin-1', 'replace').decode('latin-1'), 1, 0, 'C')
+        # Asegurar que el texto esté codificado como UTF-8
+        pdf.cell(page_width / len(headers), 6, text.encode('latin-1', 'replace').decode('latin-1'), 1, 0, 'C')
     pdf.ln()
 
-# Save the PDF using UTF-8 encoding
+# Guardar el PDF utilizando codificación UTF-8
 pdf.output("output.pdf", 'F')
