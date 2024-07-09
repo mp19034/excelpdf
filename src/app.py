@@ -12,15 +12,36 @@ data = []
 # Iterar para leer los valores de las celdas
 for row in range(1, dataframe.max_row):
     _row = [row,]
-
+    
     # Iterar sobre las columnas y agregar los valores al row
     for col in dataframe.iter_cols(1, dataframe.max_column):
         _row.append(col[row].value)
-
+    
+    # Validar y calcular según las condiciones especificadas
+    #
+    #
+    #
+    
+    if len(_row) > 2 and _row[1] == 11001:
+        if _row[3] < 54:
+            _row.append(_row[3])  # Agregar a la sexta columna
+            _row.insert(5, 0)  # Espacio para la quinta columna
+        else:
+            _row.append(0)  # Espacio para la sexta columna
+            _row.insert(5, _row[3]/54)  # Agregar a la quinta columna
+    else:
+        _row.append(None)  # Espacio para la sexta columna
+        _row.insert(5, 0)  # Espacio para la quinta columna
+    
     data.append(_row)
-
+    
+    #
+    #
+    #
+    #
+    
 # Encabezados de las columnas en el PDF
-headers = ["#", "Codigo", "Descripcion", "Unidades", "Total"]
+headers = ["#", "Codigo", "Descripcion", "Unidades", "UMB", "Cajas Completas", "Unidades"]
 
 # Texto que deseas agregar encima de la tabla
 texto_superior = "Productos Alimenticios Diana, S.A de C.V. \n Distribuidora Santa Ana \n Picking List"
