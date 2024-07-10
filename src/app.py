@@ -9,11 +9,7 @@ dataframe = excel_dataframe.active
 
 data = []
 
-
-# Lista de códigos y el umbral para las divisiones
-#codes = {11001: 54, 12002: 30, 13003: 20}  # Ejemplo de múltiples códigos y sus umbrales
-#codes = {11001: 54, 11003:54, 11007:54, 11009:54, 11027:54, 11130:54, 11974:8, 12217:8, 11649:10, 11664:10, 11665:10, 12022:10, 11462:12, 11489:12, 
-       #  11654:12, 11655:12, 11656:12, 12011:12, 12015:12, 12041:12, 12042:12, 12043:12}
+# Definir el diccionario de códigos y sus umbrales
 codes = {
     11974: 8, 12217: 8, 11649: 10, 11664: 10, 11665: 10, 12022: 10,
     11462: 12, 11489: 12, 11654: 12, 11655: 12, 11656: 12, 12011: 12,
@@ -44,30 +40,65 @@ codes = {
     12134: 800
 }
 
-# Iterar para leer los valores de las celdas
-for row in range(1, dataframe.max_row):
-    _row = [row,]
+# Definir el diccionario de reemplazo para la columna "UMB"
+code_replacement = {
+    'PAQ': [11001, 11003, 11007, 11009, 11027, 11089, 11091, 11092, 11094, 11130, 11218, 12062, 12063, 12064, 12065, 12066],#ok
+
+    'RT': [11014, 11038, 11462, 11489, 11531, 11558, 11560, 11646, 11647, 11649, 11653, 
+           11654, 11655, 11656, 11664, 11665, 11711, 11795, 11806, 11807, 11808, 11974,
+           11977, 11978, 11993, 11994, 11995, 11996, 12011, 12015, 12040, 12041, 12042,
+           12043, 12060, 12086, 12088, 12090], #ok
     
-    # Iterar sobre las columnas y agregar los valores al row
-    for col in dataframe.iter_cols(1, dataframe.max_column):
-        _row.append(col[row].value)
+    'BOL': [11025, 11026, 11064, 11097, 11098, 11099, 11137, 11139, 11154, 11211, 11212,
+            11423, 11463, 11546, 11581, 11582, 11709, 11710, 11793, 11794, 11812, 11813,
+            11833, 11834, 11852, 11854, 11855, 11856, 11857, 11858, 11860, 11861, 11862,
+            11863, 11864, 11867, 11868, 11872, 11873, 11874, 11876, 11879, 11880, 11881,
+            11882, 11883, 11884, 11885, 11886, 11887, 11888, 11889, 11890, 11894, 11895,
+            11989, 11990, 12003, 12007, 12008, 12016, 12017, 12018, 12019, 12022, 12029,
+            12035, 12037, 12038, 12039, 12044, 12045, 12046, 12047, 12048, 12049, 12050,
+            12051, 12052, 12053, 12054, 12056, 12057, 12058, 12078, 12123, 12124, 12126,
+            12127, 12131, 12132, 12133, 12134, 12177, 12213, 12214, 12215, 12216, 12217, 12218, 12224 ], #ok
+    
+    'UN': [12155, 12156]
+}
+#
+#
+
+# Iterar para leer los valores de las celdas
+#
+#
+for row in dataframe.iter_rows(min_row=2, max_row=dataframe.max_row-1):
+    _row = [row[0].row-1]  # Añadir número de fila
+    
+    for cell in row:
+        _row.append(cell.value)
     
     # Validar y calcular según las condiciones especificadas
     if len(_row) > 3 and _row[1] in codes:
         threshold = codes[_row[1]]
-        if _row[4] >= threshold:
-            complete_boxes = _row[4] // threshold
-            remaining_units = _row[4] % threshold
+        
+        # Reemplazar valor de la columna "UMB"
+        for replacement, code_list in code_replacement.items():
+            if _row[1] in code_list:
+                _row[4] = replacement
+                break
+        
+        if _row[3] >= threshold:
+            complete_boxes = _row[3] // threshold
+            remaining_units = _row[3] % threshold
             _row.append(complete_boxes)  # Agregar a la quinta columna
             _row.append(remaining_units)  # Agregar a la sexta columna
         else:
             _row.append(0)  # Espacio para la quinta columna
-            _row.append(_row[4])  # Agregar a la sexta columna
+            _row.append(_row[3])  # Agregar a la sexta columna
     else:
-        _row.append(None)  # Espacio para la quinta columna
-        _row.append(None)  # Espacio para la sexta columna
-    
+        _row.append(0)  # Espacio para la quinta columna
+        _row.append(0)  # Espacio para la sexta columna
+
     data.append(_row)
+    #
+    #
+    #
 
 # Encabezados de las columnas en el PDF
 headers = ["#", "Codigo", "Descripcion", "Unidades", "UMB", "Cajas Completas", "Unidades"]
