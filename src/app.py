@@ -69,13 +69,14 @@ code_replacement = {
 #
 for row in dataframe.iter_rows(min_row=2, max_row=dataframe.max_row-1):
     _row = [row[0].row-1]  # Añadir número de fila
-    
+    row[3].value = "No encontrado"
     for cell in row:
         _row.append(cell.value)
     
     # Validar y calcular según las condiciones especificadas
     if len(_row) > 3 and _row[1] in codes:
         threshold = codes[_row[1]]
+      
         
         # Reemplazar valor de la columna "UMB"
         for replacement, code_list in code_replacement.items():
@@ -117,7 +118,7 @@ pickig_list = "Picking List:"
 # Crear un nuevo PDF en orientación horizontal (landscape)
 pdf = FPDF(orientation='L', unit='mm', format='A4')
 pdf.add_page()
-pdf.set_font("Arial", size=6)
+pdf.set_font("Arial", size=8)
 
 # Calcular el ancho de cada celda para que ajuste al ancho de la página
 page_width = pdf.w - 2 * pdf.l_margin  # Ancho de la página menos los márgenes
